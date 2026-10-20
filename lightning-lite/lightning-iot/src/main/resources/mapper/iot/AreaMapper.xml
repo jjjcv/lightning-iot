@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.AreaMapper">
+    
+    <resultMap type="Area" id="AreaResult">
+        <result property="id"    column="id"    />
+        <result property="parentAreaId"    column="parent_area_id"    />
+        <result property="ancestors"    column="ancestors"    />
+        <result property="buildingId"    column="building_id"    />
+        <result property="areaCode"    column="area_code"    />
+        <result property="areaName"    column="area_name"    />
+        <result property="areaType"    column="area_type"    />
+        <result property="areaSize"    column="area_size"    />
+        <result property="floorNum"    column="floor_num"    />
+        <result property="department"    column="department"    />
+        <result property="personnelCount"    column="personnel_count"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectAreaVo">
+        select id, parent_area_id, ancestors, building_id, area_code, area_name, area_type, area_size, floor_num, department, personnel_count, create_by, create_time, update_by, update_time, remark from areas
+    </sql>
+
+    <select id="selectAreaList" parameterType="Area" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        <where>  
+            <if test="parentAreaId != null "> and parent_area_id = #{parentAreaId}</if>
+            <if test="ancestors != null  and ancestors != ''"> and ancestors = #{ancestors}</if>
+            <if test="buildingId != null "> and building_id = #{buildingId}</if>
+            <if test="areaCode != null  and areaCode != ''"> and area_code = #{areaCode}</if>
+            <if test="areaName != null  and areaName != ''"> and area_name like concat('%', #{areaName}, '%')</if>
+            <if test="areaType != null  and areaType != ''"> and area_type = #{areaType}</if>
+            <if test="areaSize != null "> and area_size = #{areaSize}</if>
+            <if test="floorNum != null "> and floor_num = #{floorNum}</if>
+            <if test="department != null  and department != ''"> and department = #{department}</if>
+            <if test="personnelCount != null "> and personnel_count = #{personnelCount}</if>
+        </where>
+    </select>
+    
+    <select id="selectAreaById" parameterType="Long" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertArea" parameterType="Area" useGeneratedKeys="true" keyProperty="id">
+        insert into areas
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parentAreaId != null">parent_area_id,</if>
+            <if test="ancestors != null">ancestors,</if>
+            <if test="buildingId != null">building_id,</if>
+            <if test="areaCode != null and areaCode != ''">area_code,</if>
+            <if test="areaName != null and areaName != ''">area_name,</if>
+            <if test="areaType != null">area_type,</if>
+            <if test="areaSize != null">area_size,</if>
+            <if test="floorNum != null">floor_num,</if>
+            <if test="department != null">department,</if>
+            <if test="personnelCount != null">personnel_count,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parentAreaId != null">#{parentAreaId},</if>
+            <if test="ancestors != null">#{ancestors},</if>
+            <if test="buildingId != null">#{buildingId},</if>
+            <if test="areaCode != null and areaCode != ''">#{areaCode},</if>
+            <if test="areaName != null and areaName != ''">#{areaName},</if>
+            <if test="areaType != null">#{areaType},</if>
+            <if test="areaSize != null">#{areaSize},</if>
+            <if test="floorNum != null">#{floorNum},</if>
+            <if test="department != null">#{department},</if>
+            <if test="personnelCount != null">#{personnelCount},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateArea" parameterType="Area">
+        update areas
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentAreaId != null">parent_area_id = #{parentAreaId},</if>
+            <if test="ancestors != null">ancestors = #{ancestors},</if>
+            <if test="buildingId != null">building_id = #{buildingId},</if>
+            <if test="areaCode != null and areaCode != ''">area_code = #{areaCode},</if>
+            <if test="areaName != null and areaName != ''">area_name = #{areaName},</if>
+            <if test="areaType != null">area_type = #{areaType},</if>
+            <if test="areaSize != null">area_size = #{areaSize},</if>
+            <if test="floorNum != null">floor_num = #{floorNum},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="personnelCount != null">personnel_count = #{personnelCount},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAreaById" parameterType="Long">
+        delete from areas where id = #{id}
+    </delete>
+
+    <delete id="deleteAreaByIds" parameterType="String">
+        delete from areas where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

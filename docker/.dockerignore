@@ -1,0 +1,13 @@
+**
+!backend/
+!backend/Dockerfile
+!backend/application-docker.yml
+!backend/logback-spring.xml
+!nginx/
+!nginx/Dockerfile
+!nginx/default.conf
+!payload/
+!payload/app/
+!payload/app/**
+!payload/html/
+!payload/html/**

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.DeviceBindingMapper">
+
+    <resultMap type="DeviceBinding" id="DeviceBindingResult">
+        <result property="id"    column="id"    />
+        <result property="productId"    column="product_id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="productTemplateId"    column="product_template_id"    />
+        <result property="telemetryKey"    column="telemetry_key"    />
+        <result property="gatewayId"    column="gateway_id"    />
+        <result property="gatewayName"    column="gateway_name"    />
+        <result property="edgePointId"    column="edge_point_id"    />
+        <result property="edgePointName"    column="edge_point_name"    />
+        <result property="value"    column="value"    />
+        <result property="dataType"    column="data_type"    />
+        <result property="unitSymbol"    column="unit_symbol"    />
+        <result property="lastTime"    column="last_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectDeviceBindingVo">
+        select id, product_id, device_id, product_template_id, telemetry_key, gateway_id, gateway_name, edge_point_id, edge_point_name, value, data_type, unit_symbol, last_time, create_by, create_time, update_by, update_time from device_binding
+    </sql>
+
+    <select id="selectDeviceBindingList" parameterType="DeviceBinding" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        <where>
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="productTemplateId != null  and productTemplateId != ''"> and product_template_id = #{productTemplateId}</if>
+            <if test="telemetryKey != null  and telemetryKey != ''"> and telemetry_key = #{telemetryKey}</if>
+            <if test="gatewayId != null  and gatewayId != ''"> and gateway_id = #{gatewayId}</if>
+            <if test="gatewayName != null  and gatewayName != ''"> and gateway_name like concat('%', #{gatewayName}, '%')</if>
+            <if test="edgePointId != null  and edgePointId != ''"> and edge_point_id = #{edgePointId}</if>
+            <if test="edgePointName != null  and edgePointName != ''"> and edge_point_name like concat('%', #{edgePointName}, '%')</if>
+            <if test="value != null  and value != ''"> and value = #{value}</if>
+             <if test="dataType != null  and dataType != ''"> and data_type = #{dataType}</if>
+            <if test="unitSymbol != null  and unitSymbol != ''"> and unit_symbol = #{unitSymbol}</if>
+            <if test="lastTime != null "> and last_time = #{lastTime}</if>
+        </where>
+    </select>
+
+    <select id="selectDeviceBindingById" parameterType="String" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectDeviceBindingListByDeviceIds" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where device_id in
+        <foreach item="deviceId" collection="deviceIds" open="(" separator="," close=")">
+            #{deviceId}
+        </foreach>
+    </select>
+
+    <insert id="insertDeviceBinding" parameterType="DeviceBinding">
+        insert into device_binding
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="productTemplateId != null">product_template_id,</if>
+            <if test="telemetryKey != null">telemetry_key,</if>
+            <if test="gatewayId != null">gateway_id,</if>
+            <if test="gatewayName != null">gateway_name,</if>
+            <if test="edgePointId != null">edge_point_id,</if>
+            <if test="edgePointName != null">edge_point_name,</if>
+            <if test="value != null">value,</if>
+            <if test="dataType != null">data_type,</if>
+            <if test="unitSymbol != null">unit_symbol,</if>
+            <if test="lastTime != null">last_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="productTemplateId != null">#{productTemplateId},</if>
+            <if test="telemetryKey != null">#{telemetryKey},</if>
+            <if test="gatewayId != null">#{gatewayId},</if>
+            <if test="gatewayName != null">#{gatewayName},</if>
+            <if test="edgePointId != null">#{edgePointId},</if>
+            <if test="edgePointName != null">#{edgePointName},</if>
+            <if test="value != null">#{value},</if>
+            <if test="dataType != null">#{dataType},</if>
+            <if test="unitSymbol != null">#{unitSymbol},</if>
+            <if test="lastTime != null">#{lastTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDeviceBinding" parameterType="DeviceBinding">
+        update device_binding
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="productTemplateId != null">product_template_id = #{productTemplateId},</if>
+            <if test="telemetryKey != null">telemetry_key = #{telemetryKey},</if>
+            <if test="gatewayId != null">gateway_id = #{gatewayId},</if>
+            <if test="gatewayName != null">gateway_name = #{gatewayName},</if>
+            <if test="edgePointId != null">edge_point_id = #{edgePointId},</if>
+            <if test="edgePointName != null">edge_point_name = #{edgePointName},</if>
+            <if test="value != null">value = #{value},</if>
+            <if test="dataType != null">data_type = #{dataType},</if>
+            <if test="unitSymbol != null">unit_symbol = #{unitSymbol},</if>
+            <if test="lastTime != null">last_time = #{lastTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeviceBindingById" parameterType="String">
+        delete from device_binding where id = #{id}
+    </delete>
+
+    <delete id="deleteDeviceBindingByIds" parameterType="String">
+        delete from device_binding where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <update id="updateValueBatchById">
+        <foreach collection="batchList" item="binding" separator=";">
+            UPDATE device_binding
+            SET value = #{binding.value},
+            last_time = #{binding.lastTime}
+            WHERE id = #{binding.id}
+        </foreach>
+    </update>
+    <delete id="deleteByDeviceId">
+        delete
+        from device_binding
+        where device_id = #{deviceId,jdbcType=VARCHAR}
+    </delete>
+    <update id="updateEdgePointNameByEdgePointId">
+        update device_binding
+        set edge_point_name = #{edgePointName,jdbcType=VARCHAR}
+        where edge_point_id = #{edgePointId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateGatewayNameByGatewayId">
+        update device_binding
+        set gateway_name = #{gatewayName,jdbcType=VARCHAR}
+        where gateway_id = #{gatewayId,jdbcType=VARCHAR}
+    </update>
+    <select id="selectAllByEdgePointId" parameterType="String" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where
+        edge_point_id = #{edgePointId,jdbcType=VARCHAR}
+    </select>
+    <select id="selectAllByProductId" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where
+        product_id = #{productId,jdbcType=VARCHAR}
+    </select>
+    <select id="selectAllByGatewayId" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where
+        gateway_id = #{gatewayId,jdbcType=VARCHAR}
+    </select>
+    <select id="selectAllByDeviceId" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where
+        device_id = #{deviceId,jdbcType=VARCHAR}
+    </select>
+    <select id="selectOneByProductIdAndDeviceIdAndTelemetryKey" resultMap="DeviceBindingResult">
+        <include refid="selectDeviceBindingVo"/>
+        where
+        product_id = #{productId,jdbcType=VARCHAR}
+        AND device_id = #{deviceId,jdbcType=VARCHAR}
+        AND telemetry_key = #{telemetryKey,jdbcType=VARCHAR}
+    </select>
+
+
+</mapper>

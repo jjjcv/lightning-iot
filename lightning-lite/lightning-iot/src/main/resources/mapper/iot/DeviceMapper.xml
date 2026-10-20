@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.DeviceMapper">
+    
+    <resultMap type="Device" id="DevicesResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="token"    column="token"    />
+        <result property="alias"    column="alias"    />
+        <result property="productId"    column="product_id"    />
+        <result property="description"    column="description"    />
+        <result property="status"    column="status"    />
+        <result property="ext"    column="ext"    />
+        <result property="gatewayId"    column="gateway_id"    />
+        <result property="deviceType"    column="device_type"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectDevicesVo">
+        select id, name, token, alias, product_id, description, status, ext, gateway_id, device_type, create_by, create_time, update_time from devices
+    </sql>
+
+    <select id="selectDeviceList" parameterType="Device" resultMap="DevicesResult">
+        <include refid="selectDevicesVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="token != null  and token != ''"> and token = #{token}</if>
+            <if test="alias != null  and alias != ''"> and alias = #{alias}</if>
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="ext != null  and ext != ''"> and ext = #{ext}</if>
+            <if test="gatewayId != null  and gatewayId != ''"> and gateway_id = #{gatewayId}</if>
+            <if test="deviceType != null  and deviceType != ''"> and device_type = #{deviceType}</if>
+            <if test="tagFilterIds != null and !tagFilterIds.isEmpty()">
+                <bind name="tagFilterCount" value="tagFilterIds.size()" />
+                <choose>
+                    <when test="tagMatchMode == 'all'">
+                        and (select count(*) from device_tag tb where tb.device_id = devices.id and tb.tag_id in
+                        <foreach collection="tagFilterIds" item="tagId" open="(" close=")" separator=",">#{tagId}</foreach>
+                        ) = #{tagFilterCount}
+                    </when>
+                    <otherwise>
+                        and exists (select 1 from device_tag tb where tb.device_id = devices.id and tb.tag_id in
+                        <foreach collection="tagFilterIds" item="tagId" open="(" close=")" separator=",">#{tagId}</foreach>)
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectDeviceById" parameterType="String" resultMap="DevicesResult">
+        <include refid="selectDevicesVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDevice" parameterType="Device">
+        insert into devices
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="token != null">token,</if>
+            <if test="alias != null">alias,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="description != null">description,</if>
+            <if test="status != null">status,</if>
+            <if test="ext != null">ext,</if>
+            <if test="gatewayId != null">gateway_id,</if>
+            <if test="deviceType != null">device_type,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="token != null">#{token},</if>
+            <if test="alias != null">#{alias},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="description != null">#{description},</if>
+            <if test="status != null">#{status},</if>
+            <if test="ext != null">#{ext},</if>
+            <if test="gatewayId != null">#{gatewayId},</if>
+            <if test="deviceType != null">#{deviceType},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDevice" parameterType="Device">
+        update devices
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="token != null">token = #{token},</if>
+            <if test="alias != null">alias = #{alias},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="ext != null">ext = #{ext},</if>
+            <if test="gatewayId != null">gateway_id = #{gatewayId},</if>
+            <if test="deviceType != null">device_type = #{deviceType},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeviceById" parameterType="String">
+        delete from devices where id = #{id}
+    </delete>
+
+    <delete id="deleteDevicesByIds" parameterType="String">
+        delete from devices where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="countByProductId" resultType="int">
+        select count(*)
+        from devices
+        where product_id = #{productId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectDeviceStatistics" resultType="com.ruoyi.iot.domain.DeviceStatistics">
+        select
+            count(*) as total,
+            0 as online,
+            0 as offline,
+            coalesce(sum(case when status = 'enable' then 1 else 0 end), 0) as enabled,
+            coalesce(sum(case when status = 'disable' then 1 else 0 end), 0) as disabled
+        from devices
+    </select>
+
+    <select id="selectDeviceTypeCount" resultType="java.util.HashMap">
+        select device_type as deviceType, count(*) as count
+        from devices
+        where device_type is not null and device_type != ''
+        group by device_type
+    </select>
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.TransparentCodecMapper">
+    
+    <resultMap type="TransparentCodec" id="TransparentCodecResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="provider"    column="provider"    />
+        <result property="description"    column="description"    />
+        <result property="protocolId"    column="protocol_id"    />
+        <result property="fileUrl"    column="file_url"    />
+        <result property="configuration"    column="configuration"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectTransparentCodecVo">
+        select id, name, provider, description, protocol_id, file_url, configuration, create_by, create_time, update_by, update_time, remark from transparent_codec
+    </sql>
+
+    <select id="selectTransparentCodecList" parameterType="TransparentCodec" resultMap="TransparentCodecResult">
+        <include refid="selectTransparentCodecVo"/>
+        <where>  
+            <if test="id != null  and id != ''"> and id = #{id}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="provider != null  and provider != ''"> and provider = #{provider}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="protocolId != null  and protocolId != ''"> and protocol_id = #{protocolId}</if>
+            <if test="fileUrl != null  and fileUrl != ''"> and file_url = #{fileUrl}</if>
+            <if test="configuration != null  and configuration != ''"> and configuration = #{configuration}</if>
+        </where>
+    </select>
+    
+    <select id="selectTransparentCodecById" parameterType="String" resultMap="TransparentCodecResult">
+        <include refid="selectTransparentCodecVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertTransparentCodec" parameterType="TransparentCodec">
+        insert into transparent_codec
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="provider != null">provider,</if>
+            <if test="description != null">description,</if>
+            <if test="protocolId != null">protocol_id,</if>
+            <if test="fileUrl != null">file_url,</if>
+            <if test="configuration != null">configuration,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="provider != null">#{provider},</if>
+            <if test="description != null">#{description},</if>
+            <if test="protocolId != null">#{protocolId},</if>
+            <if test="fileUrl != null">#{fileUrl},</if>
+            <if test="configuration != null">#{configuration},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTransparentCodec" parameterType="TransparentCodec">
+        update transparent_codec
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="provider != null">provider = #{provider},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="protocolId != null">protocol_id = #{protocolId},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="configuration != null">configuration = #{configuration},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTransparentCodecById" parameterType="String">
+        delete from transparent_codec where id = #{id}
+    </delete>
+
+    <delete id="deleteTransparentCodecByIds" parameterType="String">
+        delete from transparent_codec where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

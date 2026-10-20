@@ -1,0 +1,91 @@
+/*
+ * Shared workspace pattern for IoT product, device and edge gateway pages.
+ * Page-specific styles should only describe domain-specific content.
+ */
+
+.iot-asset-page {
+  > .asset-filter-panel,
+  .main-content > .asset-filter-panel {
+    margin-bottom: 18px;
+  }
+
+  .asset-table-panel {
+    overflow: hidden;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: 14px;
+    box-shadow: var(--ui-shadow-sm);
+  }
+
+  .asset-table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--ui-border);
+
+    > div:first-child {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      min-width: 0;
+    }
+  }
+
+  .asset-table-title {
+    color: var(--ui-text-primary);
+    font-size: 16px;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .asset-table-caption {
+    overflow: hidden;
+    color: var(--ui-text-secondary);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .asset-toolbar {
+    margin: 0 !important;
+    padding: 12px 14px;
+    background: var(--ui-surface-soft);
+    border-bottom: 1px solid var(--ui-border);
+  }
+
+  .asset-table-panel > .el-table {
+    border: 0;
+    border-radius: 0;
+  }
+
+  .asset-table-panel > .pagination-container {
+    margin: 0;
+    padding: 16px 18px;
+    border-top: 1px solid var(--ui-border);
+  }
+}
+
+@media (max-width: 720px) {
+  .iot-asset-page {
+    .asset-table-heading,
+    .asset-table-heading > div:first-child {
+      align-items: flex-start;
+    }
+
+    .asset-table-heading {
+      padding: 14px;
+    }
+
+    .asset-table-heading > div:first-child {
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .asset-toolbar {
+      row-gap: 8px;
+    }
+  }
+}

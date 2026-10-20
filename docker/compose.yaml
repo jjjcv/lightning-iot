@@ -1,0 +1,172 @@
+name: ${COMPOSE_PROJECT_NAME:-lightning-iot}
+
+x-service: &service
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  mysql:
+    <<: *service
+    image: ${MYSQL_IMAGE:-mysql:8.0}
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lightning}
+      MYSQL_USER: ${MYSQL_USERNAME:-lightning}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lightning123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-lightningRoot123}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      - --lower-case-table-names=1
+      - --max-connections=300
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - type: bind
+        source: ./payload/database/lightning.sql
+        target: /docker-entrypoint-initdb.d/01-lightning.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$$MYSQL_USER" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  redis:
+    <<: *service
+    image: ${REDIS_IMAGE:-redis:7.4-alpine}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-lightningRedis123}
+    command: [sh, -c, 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  influxdb:
+    <<: *service
+    image: ${INFLUXDB_IMAGE:-influxdb:2.7}
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_USERNAME:-lightning}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD:-lightningInflux123}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG:-lightning}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET:-device_history}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:-lightning-iot-influx-token-change-me-before-production-2026}
+      INFLUXD_REPORTING_DISABLED: "true"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    healthcheck:
+      # /health 可能在初始化期间就返回成功；认证查询同时确认 bucket 已创建。
+      test: [CMD-SHELL, 'influx bucket list --host http://127.0.0.1:8086 --org "$$DOCKER_INFLUXDB_INIT_ORG" --token "$$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" --name "$$DOCKER_INFLUXDB_INIT_BUCKET" | grep -F "$$DOCKER_INFLUXDB_INIT_BUCKET" >/dev/null']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  nanomq:
+    <<: *service
+    image: ${NANOMQ_IMAGE:-emqx/nanomq:0.25.6}
+    command: [nanomq, start, --conf, /etc/nanomq.conf]
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+    volumes:
+      - type: bind
+        source: ./nanomq/nanomq.conf
+        target: /etc/nanomq.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nanomq/nanomq_pwd.conf
+        target: /etc/nanomq_pwd.conf
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      # NanoMQ 0.25.6 镜像中的 BusyBox nc 支持 -z，直接检查 MQTT TCP 端口。
+      test: [CMD, nc, -z, -w, "2", "127.0.0.1", "1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    <<: *service
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        JAVA_IMAGE: ${JAVA_IMAGE:-eclipse-temurin:21-jre-jammy}
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms256m -Xmx1024m -Duser.timezone=Asia/Shanghai}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lightning}
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-lightning}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lightning123}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-lightningRedis123}
+      TOKEN_SECRET: ${TOKEN_SECRET:-lightning-iot-token-secret-change-me-before-production-2026}
+      DRUID_ADMIN_PASSWORD: ${DRUID_ADMIN_PASSWORD:-lightningDruid123}
+      INFLUX_ORG: ${INFLUX_ORG:-lightning}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-device_history}
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-lightning-iot-influx-token-change-me-before-production-2026}
+      NANOMQ_USERNAME: ${NANOMQ_USERNAME:-admin}
+      NANOMQ_PASSWORD: ${NANOMQ_PASSWORD:-lightningMqtt123}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+      nanomq:
+        condition: service_healthy
+    volumes:
+      - backend-data:/opt/lightning/data
+      - backend-logs:/opt/lightning/logs
+      - backend-backup:/opt/lightning/backup
+    healthcheck:
+      # 与 Windows 安装程序一致：后端根路径返回 2xx/3xx/4xx 均表示 HTTP 服务已就绪。
+      test: [CMD-SHELL, 'code=$$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:8080/); test "$$code" -ge 200 && test "$$code" -lt 500']
+      interval: 10s
+      timeout: 6s
+      retries: 30
+      start_period: 60s
+
+  nginx:
+    <<: *service
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+      args:
+        NGINX_IMAGE: ${NGINX_IMAGE:-nginx:1.28-alpine}
+    ports:
+      - "${HTTP_PORT:-8798}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1/']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:
+  redis-data:
+  influxdb-data:
+  influxdb-config:
+  backend-data:
+  backend-logs:
+  backend-backup:

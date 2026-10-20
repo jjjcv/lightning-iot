@@ -1,0 +1,29 @@
+package com.ruoyi.iot.metadata.unit;
+
+
+import com.ruoyi.iot.metadata.FormatSupport;
+import com.ruoyi.iot.metadata.Metadata;
+
+import java.io.Serializable;
+import java.util.Map;
+
+/**
+ * 值单位
+ *
+ * @author bsetfeng
+ * @author zhouhao
+ * @version 1.0
+ **/
+public interface ValueUnit extends Metadata, FormatSupport, Serializable {
+
+    /**
+     * 单位符号
+     * @return 符号
+     */
+    String getSymbol();
+
+    @Override
+    default Map<String, Object> getExpands() {
+        return null;
+    }
+}

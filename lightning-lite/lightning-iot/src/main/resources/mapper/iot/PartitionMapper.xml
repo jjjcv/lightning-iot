@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.PartitionMapper">
+
+    <!-- 分区信息结果映射 -->
+    <resultMap id="PartitionInfoResultMap" type="PartitionInfo">
+        <result property="tableName" column="table_name"/>
+        <result property="partitionName" column="partition_name"/>
+        <result property="partitionExpression" column="partition_expression"/>
+        <result property="partitionDescription" column="partition_description"/>
+        <result property="tableRows" column="table_rows"/>
+        <result property="dataLength" column="data_length"/>
+        <result property="indexLength" column="index_length"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 查询表的所有分区信息 -->
+    <select id="selectPartitionsByTable" resultMap="PartitionInfoResultMap">
+        SELECT
+            p.table_name,
+            p.partition_name,
+            p.partition_expression,
+            p.partition_description,
+            p.table_rows,
+            p.data_length,
+            p.index_length,
+            p.create_time
+        FROM information_schema.partitions p
+        WHERE p.table_schema = DATABASE()
+          AND p.table_name = #{tableName}
+          AND p.partition_name IS NOT NULL
+        ORDER BY p.partition_ordinal_position
+    </select>
+
+    <!-- 检查分区是否存在 -->
+    <select id="checkPartitionExists" resultType="Integer">
+        SELECT COUNT(*)
+        FROM information_schema.partitions
+        WHERE table_schema = DATABASE()
+          AND table_name = #{tableName}
+          AND partition_name = #{partitionName}
+    </select>
+
+    <!-- 创建月份分区 -->
+    <update id="createMonthPartition">
+        ALTER TABLE ${tableName} ADD PARTITION (
+            PARTITION ${partitionName} VALUES LESS THAN (TO_DAYS('${partitionValue}'))
+            )
+    </update>
+
+    <!-- 创建日分区 -->
+    <update id="createDayPartition">
+        ALTER TABLE ${tableName} ADD PARTITION (
+            PARTITION ${partitionName} VALUES LESS THAN (TO_DAYS('${partitionValue}'))
+            )
+    </update>
+
+    <!-- 删除分区 -->
+    <update id="dropPartition">
+        ALTER TABLE ${tableName} DROP PARTITION ${partitionName}
+    </update>
+
+    <!-- 查询分区统计信息 -->
+    <select id="selectPartitionStatistics" resultType="java.util.Map">
+        SELECT
+            partition_name,
+            partition_description,
+            table_rows,
+            ROUND((data_length + index_length) / 1024 / 1024, 2) as partition_size_mb,
+            ROUND(data_length / 1024 / 1024, 2) as data_size_mb,
+            ROUND(index_length / 1024 / 1024, 2) as index_size_mb,
+            create_time,
+            update_time,
+            check_time
+        FROM information_schema.partitions
+        WHERE table_schema = DATABASE()
+          AND table_name = #{tableName}
+          AND partition_name IS NOT NULL
+        ORDER BY partition_ordinal_position DESC
+    </select>
+
+    <!-- 获取表的分区信息 -->
+    <select id="getTablePartitionInfo" resultType="java.util.Map">
+        SELECT DISTINCT
+            partition_name,
+            partition_method,
+            partition_expression,
+            subpartition_method,
+            subpartition_expression
+        FROM information_schema.partitions
+        WHERE table_schema = DATABASE()
+          AND table_name = #{tableName}
+          AND partition_name IS NOT NULL
+            LIMIT 1
+    </select>
+
+    <!-- 重组分区 -->
+    <update id="reorganizePartition">
+        ALTER TABLE ${tableName} REORGANIZE PARTITION ${partitionName}
+    </update>
+
+    <!-- 分析分区 -->
+    <update id="analyzePartition">
+        ANALYZE TABLE ${tableName} PARTITION (${partitionName})
+    </update>
+</mapper>

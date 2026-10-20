@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.EdgeDataPointMapper">
+
+    <resultMap type="EdgeDataPoint" id="EdgeDataPointResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="protocolId"    column="protocol_id"    />
+        <result property="gatewayId"    column="gateway_id"    />
+        <result property="type"    column="type"    />
+        <result property="operationTpye"    column="operationTpye"    />
+        <result property="config"    column="config"    />
+        <result property="value"    column="value"    />
+        <result property="lastTime"    column="last_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectEdgeDataPointVo">
+        select id, name, protocol_id, gateway_id, type, operationTpye, config, value, last_time, create_by, create_time, update_by, update_time from edge_data_point
+    </sql>
+
+    <select id="selectEdgeDataPointList" parameterType="EdgeDataPoint" resultMap="EdgeDataPointResult">
+        <include refid="selectEdgeDataPointVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="protocolId != null  and protocolId != ''"> and protocol_id = #{protocolId}</if>
+            <if test="gatewayId != null  and gatewayId != ''"> and gateway_id = #{gatewayId}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="operationTpye != null  and operationTpye != ''"> and operationTpye = #{operationTpye}</if>
+            <if test="config != null  and config != ''"> and config = #{config}</if>
+            <if test="value != null  and value != ''"> and value = #{value}</if>
+            <if test="lastTime != null "> and last_time = #{lastTime}</if>
+        </where>
+    </select>
+
+    <select id="selectEdgeDataPointById" parameterType="String" resultMap="EdgeDataPointResult">
+        <include refid="selectEdgeDataPointVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectOneByGatewayIdAndName" resultMap="EdgeDataPointResult">
+        <include refid="selectEdgeDataPointVo"/>
+        where
+        gateway_id = #{gatewayId,jdbcType=VARCHAR}
+        AND name = #{name,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertEdgeDataPoint" parameterType="EdgeDataPoint">
+        insert into edge_data_point
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="protocolId != null">protocol_id,</if>
+            <if test="gatewayId != null">gateway_id,</if>
+            <if test="type != null">type,</if>
+            <if test="operationTpye != null">operationTpye,</if>
+            <if test="config != null">config,</if>
+            <if test="value != null">value,</if>
+            <if test="lastTime != null">last_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="protocolId != null">#{protocolId},</if>
+            <if test="gatewayId != null">#{gatewayId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="operationTpye != null">#{operationTpye},</if>
+            <if test="config != null">#{config},</if>
+            <if test="value != null">#{value},</if>
+            <if test="lastTime != null">#{lastTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEdgeDataPoint" parameterType="EdgeDataPoint">
+        update edge_data_point
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="protocolId != null">protocol_id = #{protocolId},</if>
+            <if test="gatewayId != null">gateway_id = #{gatewayId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="operationTpye != null">operationTpye = #{operationTpye},</if>
+            <if test="config != null">config = #{config},</if>
+            <if test="value != null">value = #{value},</if>
+            <if test="lastTime != null">last_time = #{lastTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updateValueBatchById" parameterType="List">
+        <foreach collection="edgeDataPointList" item="EdgeDataPoint" separator=";">
+            UPDATE edge_data_point
+            SET value = #{EdgeDataPoint.value},
+            last_time = #{EdgeDataPoint.lastTime}
+            WHERE id = #{EdgeDataPoint.id}
+        </foreach>
+    </update>
+
+    <delete id="deleteEdgeDataPointById" parameterType="String">
+        delete from edge_data_point where id = #{id}
+    </delete>
+
+    <delete id="deleteEdgeDataPointByIds" parameterType="String">
+        delete from edge_data_point where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByGatewayId">
+        delete
+        from edge_data_point
+        where gateway_id = #{gatewayId,jdbcType=VARCHAR}
+    </delete>
+
+    <select id="selectEdgeDataPointStatistics" resultType="com.ruoyi.iot.domain.EdgeDataPointStatistics">
+        select
+            count(*) as total,
+            coalesce(sum(case when ed.link_status = 'online' then 1 else 0 end), 0) as online,
+            coalesce(sum(case when ed.link_status = 'offline' then 1 else 0 end), 0) as offline
+        from edge_data_point dp
+        left join edge_device ed on dp.gateway_id = ed.id
+    </select>
+
+</mapper>

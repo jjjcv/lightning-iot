@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.TagDetailMapper">
+    
+    <resultMap type="TagDetail" id="TagDetailResult">
+        <result property="productCount" column="product_count" />
+        <result property="deviceCount" column="device_count" />
+        <result property="tagId"    column="tag_id"    />
+        <result property="tagName"    column="tag_name"    />
+        <result property="description"    column="description"    />
+        <result property="tagType"    column="tag_type"    />
+        <result property="cssClass"    column="css_class"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectTagDetailVo">
+        select tag_id, tag_name, description, tag_type, css_class, create_by, create_time, update_by, update_time, remark,
+        (select count(*) from product_tag pt inner join products p on p.id = pt.product_id where pt.tag_id = tag_detail.tag_id) as product_count,
+        (select count(*) from device_tag dt inner join devices d on d.id = dt.device_id where dt.tag_id = tag_detail.tag_id) as device_count
+        from tag_detail
+    </sql>
+
+    <select id="selectDeviceIdsByTagId" parameterType="Long" resultType="String">
+        select distinct d.id
+        from device_tag dt
+        inner join devices d on d.id = dt.device_id
+        where dt.tag_id = #{tagId}
+        order by d.id
+    </select>
+
+    <select id="selectTagIdByName" resultType="Long">
+        select tag_id from tag_detail where tag_name = #{tagName} limit 1
+    </select>
+
+    <select id="selectTagDetailList" parameterType="TagDetail" resultMap="TagDetailResult">
+        <include refid="selectTagDetailVo"/>
+        <where>  
+            <if test="tagName != null  and tagName != ''"> and tag_name like concat('%', #{tagName}, '%')</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="tagType != null  and tagType != ''"> and tag_type = #{tagType}</if>
+            <if test="cssClass != null  and cssClass != ''"> and css_class = #{cssClass}</if>
+        </where>
+        order by tag_id desc
+    </select>
+    
+    <select id="selectTagDetailByTagId" parameterType="Long" resultMap="TagDetailResult">
+        <include refid="selectTagDetailVo"/>
+        where tag_id = #{tagId}
+    </select>
+
+    <insert id="insertTagDetail" parameterType="TagDetail" useGeneratedKeys="true" keyProperty="tagId">
+        insert into tag_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tagName != null">tag_name,</if>
+            <if test="description != null">description,</if>
+            <if test="tagType != null">tag_type,</if>
+            <if test="cssClass != null">css_class,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tagName != null">#{tagName},</if>
+            <if test="description != null">#{description},</if>
+            <if test="tagType != null">#{tagType},</if>
+            <if test="cssClass != null">#{cssClass},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTagDetail" parameterType="TagDetail">
+        update tag_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tagName != null">tag_name = #{tagName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="tagType != null">tag_type = #{tagType},</if>
+            <if test="cssClass != null">css_class = #{cssClass},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where tag_id = #{tagId}
+    </update>
+
+    <delete id="deleteTagDetailByTagId" parameterType="Long">
+        delete from tag_detail where tag_id = #{tagId}
+    </delete>
+
+    <delete id="deleteTagDetailByTagIds" parameterType="String">
+        delete from tag_detail where tag_id in 
+        <foreach item="tagId" collection="array" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
+    </delete>
+</mapper>

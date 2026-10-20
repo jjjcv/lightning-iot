@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.ProductsMapper">
+    
+    <resultMap type="Product" id="ProductsResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="photoUrl"    column="photo_url"    />
+        <result property="description"    column="description"    />
+        <result property="productCategoryId"    column="product_category_id"    />
+        <result property="protocolId"    column="protocol_id"    />
+        <result property="transportCodecId"    column="transport_codec_id"    />
+        <result property="storageInterval"    column="storage_interval"    />
+        <result property="dataExpiration"    column="data_expiration"    />
+        <result property="deviceType"    column="device_type"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectProductsVo">
+        select id, name, photo_url, description, product_category_id, protocol_id, transport_codec_id, storage_interval, data_expiration, device_type, status, create_by, create_time, update_by, update_time from products
+    </sql>
+
+    <select id="selectProductsList" parameterType="Product" resultMap="ProductsResult">
+        <include refid="selectProductsVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="photoUrl != null  and photoUrl != ''"> and photo_url = #{photoUrl}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="productCategoryId != null  and productCategoryId != ''"> and product_category_id = #{productCategoryId}</if>
+            <if test="protocolId != null  and protocolId != ''"> and protocol_id = #{protocolId}</if>
+            <if test="transportCodecId != null  and transportCodecId != ''"> and transport_codec_id = #{transportCodecId}</if>
+            <if test="storageInterval != null "> and storage_interval = #{storageInterval}</if>
+            <if test="dataExpiration != null "> and data_expiration = #{dataExpiration}</if>
+            <if test="deviceType != null  and deviceType != ''"> and device_type = #{deviceType}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="tagFilterIds != null and !tagFilterIds.isEmpty()">
+                <bind name="tagFilterCount" value="tagFilterIds.size()" />
+                <choose>
+                    <when test="tagMatchMode == 'all'">
+                        and (select count(*) from product_tag tb where tb.product_id = products.id and tb.tag_id in
+                        <foreach collection="tagFilterIds" item="tagId" open="(" close=")" separator=",">#{tagId}</foreach>
+                        ) = #{tagFilterCount}
+                    </when>
+                    <otherwise>
+                        and exists (select 1 from product_tag tb where tb.product_id = products.id and tb.tag_id in
+                        <foreach collection="tagFilterIds" item="tagId" open="(" close=")" separator=",">#{tagId}</foreach>)
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectProductsById" parameterType="String" resultMap="ProductsResult">
+        <include refid="selectProductsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertProducts" parameterType="Product">
+        insert into products
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="photoUrl != null">photo_url,</if>
+            <if test="description != null">description,</if>
+            <if test="productCategoryId != null">product_category_id,</if>
+            <if test="protocolId != null">protocol_id,</if>
+            <if test="transportCodecId != null">transport_codec_id,</if>
+            <if test="storageInterval != null">storage_interval,</if>
+            <if test="dataExpiration != null">data_expiration,</if>
+            <if test="deviceType != null">device_type,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="photoUrl != null">#{photoUrl},</if>
+            <if test="description != null">#{description},</if>
+            <if test="productCategoryId != null">#{productCategoryId},</if>
+            <if test="protocolId != null">#{protocolId},</if>
+            <if test="transportCodecId != null">#{transportCodecId},</if>
+            <if test="storageInterval != null">#{storageInterval},</if>
+            <if test="dataExpiration != null">#{dataExpiration},</if>
+            <if test="deviceType != null">#{deviceType},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateProducts" parameterType="Product">
+        update products
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="photoUrl != null">photo_url = #{photoUrl},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="productCategoryId != null">product_category_id = #{productCategoryId},</if>
+            <if test="protocolId != null">protocol_id = #{protocolId},</if>
+            <if test="transportCodecId != null">transport_codec_id = #{transportCodecId},</if>
+            <if test="storageInterval != null">storage_interval = #{storageInterval},</if>
+            <if test="dataExpiration != null">data_expiration = #{dataExpiration},</if>
+            <if test="deviceType != null">device_type = #{deviceType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductsById" parameterType="String">
+        delete from products where id = #{id}
+    </delete>
+
+    <delete id="deleteProductsByIds" parameterType="String">
+        delete from products where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

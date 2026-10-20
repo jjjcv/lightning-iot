@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.BuildingsMapper">
+    
+    <resultMap type="Buildings" id="BuildingsResult">
+        <result property="id"    column="id"    />
+        <result property="buildingCode"    column="building_code"    />
+        <result property="buildingName"    column="building_name"    />
+        <result property="buildingType"    column="building_type"    />
+        <result property="totalArea"    column="total_area"    />
+        <result property="floors"    column="floors"    />
+        <result property="constructionYear"    column="construction_year"    />
+        <result property="location"    column="location"    />
+        <result property="buildingStructure"    column="building_structure"    />
+        <result property="exteriorWallInsulationType"    column="exterior_wall_insulation_type"    />
+        <result property="roofInsulationType"    column="roof_insulation_type"    />
+        <result property="windowType"    column="window_type"    />
+        <result property="glassType"    column="glass_type"    />
+        <result property="airConditioningArea"    column="air_conditioning_area"    />
+        <result property="airConditioningType"    column="air_conditioning_type"    />
+        <result property="climateZone" column="climate_zone" />
+        <result property="personnelCount" column="personnel_count" />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectBuildingsVo">
+        select id, building_code, building_name, building_type, total_area, floors, construction_year,
+               location, building_structure, exterior_wall_insulation_type, roof_insulation_type,
+               window_type, glass_type, air_conditioning_area, air_conditioning_type,
+               climate_zone, personnel_count,
+               create_by, create_time, update_by, update_time, remark from buildings
+    </sql>
+
+    <select id="selectBuildingsList" parameterType="Buildings" resultMap="BuildingsResult">
+        <include refid="selectBuildingsVo"/>
+        <where>  
+            <if test="buildingCode != null  and buildingCode != ''"> and building_code = #{buildingCode}</if>
+            <if test="buildingName != null  and buildingName != ''"> and building_name like concat('%', #{buildingName}, '%')</if>
+            <if test="buildingType != null  and buildingType != ''"> and building_type = #{buildingType}</if>
+            <if test="totalArea != null "> and total_area = #{totalArea}</if>
+            <if test="floors != null "> and floors = #{floors}</if>
+            <if test="constructionYear != null "> and construction_year = #{constructionYear}</if>
+            <if test="location != null  and location != ''"> and location = #{location}</if>
+            <if test="buildingStructure != null  and buildingStructure != ''"> and building_structure = #{buildingStructure}</if>
+            <if test="exteriorWallInsulationType != null  and exteriorWallInsulationType != ''"> and exterior_wall_insulation_type = #{exteriorWallInsulationType}</if>
+            <if test="roofInsulationType != null  and roofInsulationType != ''"> and roof_insulation_type = #{roofInsulationType}</if>
+            <if test="windowType != null  and windowType != ''"> and window_type = #{windowType}</if>
+            <if test="glassType != null  and glassType != ''"> and glass_type = #{glassType}</if>
+            <if test="airConditioningArea != null "> and air_conditioning_area = #{airConditioningArea}</if>
+            <if test="airConditioningType != null  and airConditioningType != ''"> and air_conditioning_type = #{airConditioningType}</if>
+        </where>
+    </select>
+    
+    <select id="selectBuildingsById" parameterType="Long" resultMap="BuildingsResult">
+        <include refid="selectBuildingsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertBuildings" parameterType="Buildings" useGeneratedKeys="true" keyProperty="id">
+        insert into buildings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="buildingCode != null and buildingCode != ''">building_code,</if>
+            <if test="buildingName != null and buildingName != ''">building_name,</if>
+            <if test="buildingType != null">building_type,</if>
+            <if test="totalArea != null">total_area,</if>
+            <if test="floors != null">floors,</if>
+            <if test="constructionYear != null">construction_year,</if>
+            <if test="location != null">location,</if>
+            <if test="buildingStructure != null">building_structure,</if>
+            <if test="exteriorWallInsulationType != null">exterior_wall_insulation_type,</if>
+            <if test="roofInsulationType != null">roof_insulation_type,</if>
+            <if test="windowType != null">window_type,</if>
+            <if test="glassType != null">glass_type,</if>
+            <if test="airConditioningArea != null">air_conditioning_area,</if>
+            <if test="airConditioningType != null">air_conditioning_type,</if>
+            <if test="climateZone != null">climate_zone,</if>
+            <if test="personnelCount != null">personnel_count,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="buildingCode != null and buildingCode != ''">#{buildingCode},</if>
+            <if test="buildingName != null and buildingName != ''">#{buildingName},</if>
+            <if test="buildingType != null">#{buildingType},</if>
+            <if test="totalArea != null">#{totalArea},</if>
+            <if test="floors != null">#{floors},</if>
+            <if test="constructionYear != null">#{constructionYear},</if>
+            <if test="location != null">#{location},</if>
+            <if test="buildingStructure != null">#{buildingStructure},</if>
+            <if test="exteriorWallInsulationType != null">#{exteriorWallInsulationType},</if>
+            <if test="roofInsulationType != null">#{roofInsulationType},</if>
+            <if test="windowType != null">#{windowType},</if>
+            <if test="glassType != null">#{glassType},</if>
+            <if test="airConditioningArea != null">#{airConditioningArea},</if>
+            <if test="airConditioningType != null">#{airConditioningType},</if>
+            <if test="climateZone != null">#{climateZone},</if>
+            <if test="personnelCount != null">#{personnelCount},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBuildings" parameterType="Buildings">
+        update buildings
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="buildingCode != null and buildingCode != ''">building_code = #{buildingCode},</if>
+            <if test="buildingName != null and buildingName != ''">building_name = #{buildingName},</if>
+            <if test="buildingType != null">building_type = #{buildingType},</if>
+            <if test="totalArea != null">total_area = #{totalArea},</if>
+            <if test="floors != null">floors = #{floors},</if>
+            <if test="constructionYear != null">construction_year = #{constructionYear},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="buildingStructure != null">building_structure = #{buildingStructure},</if>
+            <if test="exteriorWallInsulationType != null">exterior_wall_insulation_type = #{exteriorWallInsulationType},</if>
+            <if test="roofInsulationType != null">roof_insulation_type = #{roofInsulationType},</if>
+            <if test="windowType != null">window_type = #{windowType},</if>
+            <if test="glassType != null">glass_type = #{glassType},</if>
+            <if test="airConditioningArea != null">air_conditioning_area = #{airConditioningArea},</if>
+            <if test="airConditioningType != null">air_conditioning_type = #{airConditioningType},</if>
+            <if test="climateZone != null">climate_zone = #{climateZone},</if>
+            <if test="personnelCount != null">personnel_count = #{personnelCount},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBuildingsById" parameterType="Long">
+        delete from buildings where id = #{id}
+    </delete>
+
+    <delete id="deleteBuildingsByIds" parameterType="String">
+        delete from buildings where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

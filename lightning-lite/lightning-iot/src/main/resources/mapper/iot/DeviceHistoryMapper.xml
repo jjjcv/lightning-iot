@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.DeviceHistoryMapper">
+    
+    <resultMap type="DeviceHistory" id="DeviceHistoryResult">
+        <result property="id"    column="id"    />
+        <result property="productId"    column="product_id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="telemetryKey"    column="telemetry_key"    />
+        <result property="value"    column="value"    />
+        <result property="dataType"    column="data_type"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectDeviceHistoryVo">
+        select id, product_id, device_id, telemetry_key, value, data_type, create_time from device_history
+    </sql>
+
+    <select id="selectDeviceHistoryList" parameterType="DeviceHistory" resultMap="DeviceHistoryResult">
+        <include refid="selectDeviceHistoryVo"/>
+        <where>  
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="telemetryKey != null  and telemetryKey != ''"> and telemetry_key = #{telemetryKey}</if>
+            <if test="value != null  and value != ''"> and value = #{value}</if>
+             <if test="dataType != null  and dataType != ''"> and data_type = #{dataType}</if>
+            <if test="startTime != null"> and create_time >= #{startTime}</if>
+            <if test="endTime != null"> and #{endTime} >= create_time</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+    
+    <select id="selectDeviceHistoryById" parameterType="Long" resultMap="DeviceHistoryResult">
+        <include refid="selectDeviceHistoryVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectLatestReadingBefore" resultMap="DeviceHistoryResult">
+        <include refid="selectDeviceHistoryVo"/>
+        <where>
+            create_time &lt; #{beforeTime}
+            <if test="deviceHistory.productId != null and deviceHistory.productId != ''">
+                and product_id = #{deviceHistory.productId}
+            </if>
+            <if test="deviceHistory.deviceId != null and deviceHistory.deviceId != ''">
+                and device_id = #{deviceHistory.deviceId}
+            </if>
+            <if test="deviceHistory.telemetryKey != null and deviceHistory.telemetryKey != ''">
+                and telemetry_key = #{deviceHistory.telemetryKey}
+            </if>
+            <if test="deviceHistory.dataType != null and deviceHistory.dataType != ''">
+                and data_type = #{deviceHistory.dataType}
+            </if>
+        </where>
+        order by create_time desc, id desc
+        limit 1
+    </select>
+
+    <insert id="insertDeviceHistory" parameterType="DeviceHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into device_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productId != null">product_id,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="telemetryKey != null">telemetry_key,</if>
+            <if test="value != null">value,</if>
+            <if test="dataType != null">data_type,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productId != null">#{productId},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="telemetryKey != null">#{telemetryKey},</if>
+            <if test="value != null">#{value},</if>
+            <if test="dataType != null">#{dataType},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDeviceHistory" parameterType="DeviceHistory">
+        update device_history
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="telemetryKey != null">telemetry_key = #{telemetryKey},</if>
+            <if test="value != null">value = #{value},</if>
+            <if test="dataType != null">data_type = #{dataType},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeviceHistoryById" parameterType="Long">
+        delete from device_history where id = #{id}
+    </delete>
+
+    <delete id="deleteDeviceHistoryByIds" parameterType="String">
+        delete from device_history where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteExpiredByProduct">
+        delete from device_history where product_id = #{productId} and create_time &lt; #{beforeTime}
+    </delete>
+    <insert id="insertBatch">
+        insert into device_history(id,product_id,device_id,
+        telemetry_key,value,data_type,create_time)
+        values
+        <foreach collection="deviceHistoryCollection" item="item" separator=",">
+            (#{item.id,jdbcType=NUMERIC},#{item.productId,jdbcType=VARCHAR},#{item.deviceId,jdbcType=VARCHAR},
+            #{item.telemetryKey,jdbcType=VARCHAR},#{item.value,jdbcType=VARCHAR},#{item.dataType,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+    <select id="selectLastRecordByTimeWindow" parameterType="DeviceHistory" resultMap="DeviceHistoryResult">
+        WITH time_windowed AS (
+        SELECT
+        *,
+        FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(create_time) / #{intervalSeconds}) * #{intervalSeconds}) as
+        time_window_start,
+        FROM_UNIXTIME((FLOOR(UNIX_TIMESTAMP(create_time) / #{intervalSeconds}) + 1) * #{intervalSeconds}) as
+        time_window_end,
+        ROW_NUMBER() OVER (
+        PARTITION BY
+        product_id,
+        device_id,
+        telemetry_key,
+        FLOOR(UNIX_TIMESTAMP(create_time) / #{intervalSeconds})
+        ORDER BY create_time DESC
+        ) as rn
+        FROM device_history
+        <where>
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="telemetryKey != null  and telemetryKey != ''"> and telemetry_key = #{telemetryKey}</if>
+            <if test="value != null  and value != ''"> and value = #{value}</if>
+            <if test="dataType != null  and dataType != ''"> and data_type = #{dataType}</if>
+            <if test="startTime != null"> and create_time >= #{startTime}</if>
+            <if test="endTime != null"> and #{endTime} >= create_time</if>
+        </where>
+        )
+        SELECT
+        id,
+        product_id,
+        device_id,
+        telemetry_key,
+        value,
+        data_type,
+        create_time,
+        time_window_start,
+        time_window_end,
+        CONCAT(time_window_start, ' ~ ', time_window_end) as time_range
+        FROM time_windowed
+        WHERE rn = 1
+        ORDER BY time_window_start, product_id, device_id, telemetry_key
+    </select>
+</mapper>

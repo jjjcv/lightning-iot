@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.ProductTemplatesMapper">
+    
+    <resultMap type="ProductTemplate" id="ProductTemplatesResult">
+        <result property="id"    column="id"    />
+        <result property="productId"    column="product_id"    />
+        <result property="classify"    column="classify"    />
+        <result property="name"    column="name"    />
+        <result property="telemetryKey"    column="telemetry_key"    />
+        <result property="description"    column="description"    />
+        <result property="type"    column="type"    />
+        <result property="operationTpye"    column="operationTpye"    />
+        <result property="define"    column="define"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectProductTemplatesVo">
+        select id, product_id, classify, name, telemetry_key, description, type, operationTpye, define, create_by, create_time, update_by, update_time from product_templates
+    </sql>
+
+    <select id="selectProductTemplatesList" parameterType="ProductTemplate" resultMap="ProductTemplatesResult">
+        <include refid="selectProductTemplatesVo"/>
+        <where>  
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="classify != null  and classify != ''"> and classify = #{classify}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="telemetryKey != null  and telemetryKey != ''"> and telemetry_key = #{telemetryKey}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="operationTpye != null  and operationTpye != ''"> and operationTpye = #{operationTpye}</if>
+            <if test="define != null  and define != ''"> and define = #{define}</if>
+        </where>
+    </select>
+    
+    <select id="selectProductTemplatesById" parameterType="String" resultMap="ProductTemplatesResult">
+        <include refid="selectProductTemplatesVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertProductTemplates" parameterType="ProductTemplate">
+        insert into product_templates
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="classify != null">classify,</if>
+            <if test="name != null">name,</if>
+            <if test="telemetryKey != null">telemetry_key,</if>
+            <if test="description != null">description,</if>
+            <if test="type != null">type,</if>
+            <if test="operationTpye != null">operationTpye,</if>
+            <if test="define != null">define,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="classify != null">#{classify},</if>
+            <if test="name != null">#{name},</if>
+            <if test="telemetryKey != null">#{telemetryKey},</if>
+            <if test="description != null">#{description},</if>
+            <if test="type != null">#{type},</if>
+            <if test="operationTpye != null">#{operationTpye},</if>
+            <if test="define != null">#{define},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateProductTemplates" parameterType="ProductTemplate">
+        update product_templates
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="classify != null">classify = #{classify},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="telemetryKey != null">telemetry_key = #{telemetryKey},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="operationTpye != null">operationTpye = #{operationTpye},</if>
+            <if test="define != null">define = #{define},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductTemplatesById" parameterType="String">
+        delete from product_templates where id = #{id}
+    </delete>
+
+    <delete id="deleteProductTemplatesByIds" parameterType="String">
+        delete from product_templates where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByProductId">
+        delete
+        from product_templates
+        where product_id = #{productId,jdbcType=VARCHAR}
+    </delete>
+</mapper>

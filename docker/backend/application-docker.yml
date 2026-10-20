@@ -1,0 +1,100 @@
+server:
+  port: 8080
+
+ruoyi:
+  profile: /opt/lightning/data
+  xnljmap:
+    oss: file:/opt/lightning/data/upload/
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    druid:
+      master:
+        url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+        username: ${MYSQL_USERNAME}
+        password: ${MYSQL_PASSWORD}
+      slave:
+        enabled: false
+      initialSize: 5
+      minIdle: 10
+      maxActive: 20
+      maxWait: 60000
+      connectTimeout: 30000
+      socketTimeout: 60000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      statViewServlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: ruoyi
+        login-password: ${DRUID_ADMIN_PASSWORD}
+      filter:
+        wall:
+          config:
+            multi-statement-allow: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+      database: 0
+      password: ${REDIS_PASSWORD}
+
+token:
+  secret: ${TOKEN_SECRET}
+  expireTime: 30
+
+plugin:
+  enabled: true
+  mode: deployment
+
+influxdb:
+  enabled: true
+  url: http://influxdb:8086
+  org: ${INFLUX_ORG}
+  bucket: ${INFLUX_BUCKET}
+  token: ${INFLUX_TOKEN}
+  write-timeout: 10000
+  query-timeout: 10000
+
+mqtt:
+  enabled: true
+  host: nanomq
+  port: 1883
+  client-id: iot-platform-server
+  username: ${NANOMQ_USERNAME}
+  password: ${NANOMQ_PASSWORD}
+  qos: 0
+  shared-subscription-group: iot-group
+  topic-pattern: device/+/telemetry
+
+device:
+  history:
+    storage:
+      strategy: influxdb
+
+logging:
+  config: file:/opt/lightning/config/logback-spring.xml
+  file:
+    path: /opt/lightning/logs
+
+system:
+  backup:
+    backup-directory: /opt/lightning/backup
+    temp-directory: /opt/lightning/backup/temp
+    mysql:
+      mysqldump: /usr/bin/mysqldump
+      mysql: /usr/bin/mysql
+      host: mysql
+      port: 3306
+      username: ${MYSQL_USERNAME}
+      password: ${MYSQL_PASSWORD}
+      database: ${MYSQL_DATABASE}
+    upload:
+      directory: /opt/lightning/data/upload

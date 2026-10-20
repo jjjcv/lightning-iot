@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.TagBindingMapper">
+    <resultMap id="TagBindingResult" type="com.ruoyi.iot.domain.TagBinding">
+        <result property="objectId" column="object_id" />
+        <result property="tagId" column="tag_id" />
+        <result property="tagName" column="tag_name" />
+    </resultMap>
+    <sql id="bindingTable"><choose><when test="objectType == 'product'">product_tag</when><otherwise>device_tag</otherwise></choose></sql>
+    <sql id="objectColumn"><choose><when test="objectType == 'product'">product_id</when><otherwise>device_id</otherwise></choose></sql>
+    <select id="lockObject" resultType="String">
+        select id from <choose><when test="objectType == 'product'">products</when><otherwise>devices</otherwise></choose>
+        where id = #{objectId} for update
+    </select>
+    <select id="lockTags" resultType="Long">
+        select tag_id from tag_detail where tag_id in
+        <foreach collection="tagIds" item="id" open="(" close=")" separator=",">#{id}</foreach>
+        order by tag_id for update
+    </select>
+    <select id="selectBindings" resultMap="TagBindingResult">
+        select b.<include refid="objectColumn"/> as object_id, t.tag_id, t.tag_name
+        from <include refid="bindingTable"/> b inner join tag_detail t on t.tag_id = b.tag_id
+        where b.<include refid="objectColumn"/> in
+        <foreach collection="objectIds" item="id" open="(" close=")" separator=",">#{id}</foreach>
+        order by t.tag_id
+    </select>
+    <delete id="deleteObjectBindings">
+        delete from <include refid="bindingTable"/> where <include refid="objectColumn"/> = #{objectId}
+    </delete>
+    <insert id="insertBindings">
+        insert into <include refid="bindingTable"/> (<include refid="objectColumn"/>, tag_id) values
+        <foreach collection="tagIds" item="id" separator=",">(#{objectId}, #{id})</foreach>
+    </insert>
+    <delete id="deleteProductBindingsByTagIds">
+        delete from product_tag where tag_id in
+        <foreach collection="tagIds" item="id" open="(" close=")" separator=",">#{id}</foreach>
+    </delete>
+    <delete id="deleteDeviceBindingsByTagIds">
+        delete from device_tag where tag_id in
+        <foreach collection="tagIds" item="id" open="(" close=")" separator=",">#{id}</foreach>
+    </delete>
+</mapper>
